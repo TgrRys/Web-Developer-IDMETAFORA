@@ -23,7 +23,7 @@ Berikut adalah panduan singkat untuk penggunaan proyek ini, termasuk file SQL di
 3. Jalankan perintah berikut untuk meng-clone repository GitHub ini:
 
    ```bash
-   git clone https://github.com/NamaPengguna/NamaRepositori.git
+   [git clone https://github.com/NamaPengguna/NamaRepositori.git](https://github.com/TgrRys/Web-Developer-IDMETAFORA.git)
 
 ## Install dan Run Express JS (Backend)
 

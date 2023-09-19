@@ -6,12 +6,10 @@ import AddTask from './components/AddTask';
 function App() {
   return (
     <Router>
-      <div>
-        <Routes>
-          <Route path="/" element={<Table />} />
-          <Route path="/addtask/:taskId" element={<AddTask/>} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<Table />} />
+        <Route path="/addtask" element={<AddTask />} />
+      </Routes>
     </Router>
   );
 }

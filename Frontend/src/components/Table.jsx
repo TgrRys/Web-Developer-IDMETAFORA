@@ -1,18 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 function Table() {
   const [data, setData] = useState([]);
   useEffect(() => {
-    fetch('http://localhost:8081/task')
+    fetch("http://localhost:8081/task")
       .then((res) => res.json())
       .then((data) => setData(data))
       .catch((err) => console.log(err));
   }, []);
 
-  // Simpan id_user yang ditekan di sessionStorage
-  const handleUserClick = (userId) => {
-    sessionStorage.setItem('selectedUserId', userId);
+  const navigate = useNavigate(); // Use useNavigate to handle navigation
+
+  const handleAddTaskClick = () => {
+    navigate("/addtask"); // Navigate to AddTask without specifying userId in the URL
   };
 
   return (
@@ -33,18 +34,19 @@ function Table() {
               <td>{item.nama_task}</td>
               <td>{item.id_status}</td>
               <td>
-                {/* Simpan id_user yang ditekan di sessionStorage */}
-                <Link
-                  to={`/addtask/${item.id_task}`}
-                  onClick={() => handleUserClick(item.id_user)}
-                >
-                  {item.id_user}
-                </Link>
+                <span>
+                  User: {item.id_user}
+                </span>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <button className="btn btn-primary" onClick={handleAddTaskClick}>
+          Add Task
+        </button>
+      </div>
     </div>
   );
 }

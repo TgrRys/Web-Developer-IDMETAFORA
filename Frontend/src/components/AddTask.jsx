@@ -1,31 +1,49 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function AddTask() {
   const [taskName, setTaskName] = useState("");
-  const [status, setStatus] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [statuses, setStatuses] = useState([]);
-  const userId = sessionStorage.getItem("selectedUserId"); // Mengambil id_user dari sessionStorage
-  const [showAlert, setShowAlert] = useState(false); // State untuk menampilkan/menyembunyikan alert
+  const location = useLocation();
+  const userId = new URLSearchParams(location.search).get("userId");
+  const [showAlert, setShowAlert] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:8081/status")
+    setIsLoading(true);
+    fetch(`http://localhost:8081/user_statuses/${userId}`)
       .then((res) => res.json())
       .then((data) => {
-        setStatuses(data);
+        if (Array.isArray(data)) {
+          setStatuses(data);
+        } else {
+          console.error("Data received is not an array:", data);
+        }
       })
-      .catch((err) => console.log(err));
-  }, []);
+      .catch((err) => console.error("Error fetching data:", err))
+      .finally(() => setIsLoading(false));
+  }, [userId]);
 
   const handleTaskNameChange = (e) => {
     setTaskName(e.target.value);
   };
 
   const handleStatusChange = (e) => {
-    setStatus(e.target.value);
+    const selectedIdStatus = e.target.value;
+    setSelectedStatus(selectedIdStatus);
   };
 
   const handleSubmit = () => {
+    setIsLoading(true);
+
+    if (!taskName || !selectedStatus) {
+      console.error("Please fill in all fields and select a status");
+      setIsLoading(false);
+      return;
+    }
+
     fetch("http://localhost:8081/task", {
       method: "POST",
       headers: {
@@ -33,23 +51,24 @@ function AddTask() {
       },
       body: JSON.stringify({
         nama_task: taskName,
-        id_status: status,
-        id_user: userId, // Menggunakan userId dari sessionStorage
+        id_user: userId,
+        id_status: parseInt(selectedStatus),
       }),
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("Task added successfully:", data);
-        setShowAlert(true); // Menampilkan alert setelah berhasil menambahkan tugas
-        setTimeout(() => {
-          setShowAlert(false); // Menghilangkan alert setelah beberapa detik
-          // Navigasi ke halaman "Table" setelah menghilangkan alert
-          window.location.href = "/";
-        }, 3000); // Menghilangkan alert setelah 3 detik (3000 milidetik)
+        if (data.message === "Task created successfully") {
+          setShowAlert(true);
+          setTaskName("");
+          setSelectedStatus("");
+          // Navigate to the root ("/") after successfully adding a task
+          navigate("/");
+        } else {
+          console.error("Error creating task:", data);
+        }
       })
-      .catch((err) => {
-        console.error("Error adding task:", err);
-      });
+      .catch((err) => console.error("Error creating task:", err))
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -69,7 +88,7 @@ function AddTask() {
           <div className="mb-3">
             <label className="form-label">Status:</label>
             <select
-              value={status}
+              value={selectedStatus}
               onChange={handleStatusChange}
               className="form-select"
             >
@@ -88,14 +107,12 @@ function AddTask() {
             type="button"
             className="btn btn-primary"
             onClick={handleSubmit}
+            disabled={isLoading}
           >
-            Add Task
+            {isLoading ? "Adding Task..." : "Add Task"}
           </button>
           {showAlert && (
-            <div
-              className="alert alert-success mt-3"
-              role="alert"
-            >
+            <div className="alert alert-success mt-3" role="alert">
               Task added successfully!
             </div>
           )}
